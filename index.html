@@ -3,10 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Utility AI Toolkit (Local, No API Keys)</title>
+  <title>Utility AI Toolkit — AI Mode</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
-  <!-- External libs (free) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -17,12 +16,11 @@
 </head>
 <body>
   <header>
-    <div class="brand">⚙️ Utility AI Toolkit — Local & Free</div>
+    <div class="brand">⚙️ Utility AI Toolkit — <strong>AI Mode</strong></div>
     <div class="inline">
-      <span class="pill">No logins</span>
-      <span class="pill">No API keys</span>
-      <span class="pill">All in your browser</span>
-      <span class="pill">Works offline (PWA)</span>
+      <span class="pill">Local tools</span>
+      <span class="pill">+ Optional ChatGPT via proxy</span>
+      <span class="pill">No keys in browser</span>
     </div>
   </header>
 
@@ -30,48 +28,68 @@
     <div class="tabs">
       <button class="tab-btn active" data-tab="sheets">📊 Spreadsheet Cleaner & Analyzer</button>
       <button class="tab-btn" data-tab="meetings">📝 Meeting Notes → Summary & Actions</button>
-      <button class="tab-btn" data-tab="about">ℹ️ About & How to Publish</button>
+      <button class="tab-btn" data-tab="settings">🔐 AI Settings</button>
+      <button class="tab-btn" data-tab="about">ℹ️ About</button>
     </div>
+
+    <!-- SETTINGS TAB -->
+    <section id="settings" class="tab card" style="display:none;">
+      <h1>🔐 AI Settings</h1>
+      <p class="muted">To use ChatGPT-quality results, route requests through your own small proxy (Cloudflare Worker or Vercel). This keeps your OpenAI API key off the client.</p>
+      <div class="row">
+        <div class="card">
+          <label>Proxy URL (e.g., https://your-worker.example.workers.dev/chat)</label>
+          <input id="proxyUrl" type="text" placeholder="https://your-proxy/chat" />
+          <label>Access Token (optional, set in your proxy)</label>
+          <input id="proxyToken" type="text" placeholder="token from your proxy (if configured)" />
+          <label>Model</label>
+          <select id="model">
+            <option value="gpt-4o-mini" selected>gpt-4o-mini (fast, cost-effective)</option>
+            <option value="gpt-4o">gpt-4o (higher quality)</option>
+          </select>
+          <div style="margin-top:12px;">
+            <button class="btn primary" id="saveAiSettings">Save Settings</button>
+            <button class="btn" id="testAi">Test Connection</button>
+          </div>
+          <p id="aiStatus" class="muted" style="margin-top:10px;"></p>
+        </div>
+        <div class="card">
+          <h2>Setup guide</h2>
+          <ol>
+            <li>Deploy the included <strong>Cloudflare Worker</strong> or <strong>Vercel function</strong> (files in this ZIP).</li>
+            <li>Set environment var <code>OPENAI_API_KEY</code> in the proxy.</li>
+            <li>(Optional) Set <code>ACCESS_TOKEN</code> to protect your endpoint.</li>
+            <li>Paste the proxy URL/token here and hit <em>Save</em>.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
 
     <!-- SHEETS TAB -->
     <section id="sheets" class="tab card">
       <h1>📊 Spreadsheet Cleaner & Analyzer</h1>
-      <p class="muted">Upload a CSV or Excel file. We’ll tidy headers & rows, remove duplicates (exact or fuzzy), compute quick stats, and generate a chart. All locally.</p>
+      <p class="muted">Local cleaning + stats. Optional: ask AI for deeper insights.</p>
 
       <div class="grid">
         <div class="card">
           <label for="fileInput">Upload file (.csv, .xlsx)</label>
           <input id="fileInput" type="file" accept=".csv,.xlsx,.xls" />
-
           <div class="row" style="margin-top:12px">
-            <div>
-              <label>Delimiter (for CSV only)</label>
-              <input type="text" id="csvDelimiter" placeholder="Leave blank to auto-detect" />
-            </div>
             <div>
               <label>Duplicate check on columns (comma-separated)</label>
               <input type="text" id="dedupeCols" placeholder="e.g. email, id (optional)" />
             </div>
-          </div>
-
-          <div class="row" style="margin-top:12px">
             <div>
               <label><input type="checkbox" id="fuzzyToggle" /> Fuzzy de-dupe</label>
-              <small class="muted">Matches near-identical values (Jaro–Winkler)</small>
-            </div>
-            <div>
-              <label>Fuzzy threshold (0.85–0.98)</label>
-              <input type="number" id="fuzzyThreshold" min="0.80" max="0.99" step="0.01" value="0.92" />
+              <small class="muted">Jaro–Winkler</small>
             </div>
           </div>
-
           <div style="margin-top:12px">
             <button class="btn primary" id="processBtn">Process</button>
-            <button class="btn" id="downloadCleanBtn" disabled>⬇️ Download Clean CSV</button>
-            <button class="btn" id="downloadXLSXBtn" disabled>⬇️ Download Excel (.xlsx)</button>
-            <button class="btn" id="downloadSummaryBtn" disabled>⬇️ Download Summary</button>
+            <button class="btn" id="downloadCleanBtn" disabled>⬇️ Clean CSV</button>
+            <button class="btn" id="downloadXLSXBtn" disabled>⬇️ Excel (.xlsx)</button>
+            <button class="btn" id="downloadSummaryBtn" disabled>⬇️ Summary</button>
           </div>
-
           <p id="sheetStatus" class="muted" style="margin-top:10px;"></p>
 
           <div id="tableWrap" class="card" style="display:none;">
@@ -90,6 +108,10 @@
           </div>
           <div id="numStats" style="margin-top:10px;"></div>
 
+          <h2 style="margin-top:16px;">AI Insights (optional)</h2>
+          <button class="btn" id="askAiInsights">🤖 Ask AI for insights</button>
+          <div id="aiInsightsBox" class="muted" style="margin-top:10px;">—</div>
+
           <h2 style="margin-top:16px;">Chart a numeric column</h2>
           <select id="numericColumnSelect"><option value="">(none)</option></select>
           <canvas id="chartCanvas" style="margin-top:10px;"></canvas>
@@ -100,12 +122,14 @@
     <!-- MEETINGS TAB -->
     <section id="meetings" class="tab card" style="display:none;">
       <h1>📝 Meeting Notes → Summary & Action Items</h1>
-      <p class="muted">Paste raw notes or a transcript. We’ll create a concise summary and extract action items with owners/dates (parsed to ISO if possible).</p>
+      <p class="muted">Choose local (free) or AI mode (better quality). AI uses your proxy.</p>
       <div class="row">
         <div class="card">
           <label for="notesInput">Paste notes / transcript</label>
           <textarea id="notesInput" placeholder="Paste your meeting notes here..."></textarea>
           <div class="inline" style="margin-top:8px;">
+            <label><input type="radio" name="sumMode" value="local" checked /> Local</label>
+            <label><input type="radio" name="sumMode" value="ai" /> AI</label>
             <label for="numSentences" style="margin:0;">Summary length</label>
             <select id="numSentences">
               <option value="3">3 sentences</option>
@@ -117,7 +141,7 @@
             <button class="btn primary" id="summarizeBtn">Summarize</button>
             <button class="btn" id="downloadMeetingBtn" disabled>⬇️ Download Summary & Actions</button>
           </div>
-          <p class="muted" style="margin-top:8px;">Tip: Include speaker names (“Alex: …”) and dates (“by Friday”, “on Sept 2”) for better extraction.</p>
+          <p class="muted" style="margin-top:8px;">AI mode uses your proxy URL/token from Settings.</p>
         </div>
         <div class="card">
           <h2>Summary</h2>
@@ -128,24 +152,10 @@
       </div>
     </section>
 
-    <!-- ABOUT TAB -->
+    <!-- ABOUT -->
     <section id="about" class="tab card" style="display:none;">
-      <h1>ℹ️ About this Project</h1>
-      <p>This is a zero-cost, browser-only toolkit. No servers, no API keys, no data leaves your device.</p>
-      <h2>How to publish for free on GitHub Pages</h2>
-      <ol>
-        <li>Create a new public repo on GitHub (e.g., <code>utility-ai-toolkit</code>).</li>
-        <li>Add these files. Make sure <code>index.html</code> is at the root.</li>
-        <li>Go to <em>Settings → Pages</em> → set Source to <em>Deploy from a branch</em>, pick <em>main</em> and <em>/root</em>. Save.</li>
-        <li>Your site appears at <code>https://&lt;your-username&gt;.github.io/&lt;repo&gt;/</code>.</li>
-      </ol>
-      <p class="notice">Note: External libraries load from public CDNs. For 100% offline, download those JS files into this repo and update the <code>&lt;script src&gt;</code> tags.</p>
-      <h2>Roadmap</h2>
-      <ul>
-        <li>Self-host vendor JS for full offline use.</li>
-        <li>Advanced charts and pivoting.</li>
-        <li>Optional on-device ML summarizer via Transformers.js.</li>
-      </ul>
+      <h1>ℹ️ About</h1>
+      <p>Local utilities + optional AI via your own secure proxy.</p>
     </section>
 
     <div class="foot">© You — build, ship, iterate. ✨</div>
@@ -154,4 +164,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
