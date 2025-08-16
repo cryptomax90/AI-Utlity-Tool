@@ -10,6 +10,9 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chrono-node@2.7.5/dist/chrono.min.js"></script>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0b0f14">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -19,6 +22,7 @@
       <span class="pill">No logins</span>
       <span class="pill">No API keys</span>
       <span class="pill">All in your browser</span>
+      <span class="pill">Works offline (PWA)</span>
     </div>
   </header>
 
@@ -32,7 +36,7 @@
     <!-- SHEETS TAB -->
     <section id="sheets" class="tab card">
       <h1>📊 Spreadsheet Cleaner & Analyzer</h1>
-      <p class="muted">Upload a CSV or Excel file. We’ll tidy headers & rows, remove duplicates, compute quick stats, and generate a chart. All locally.</p>
+      <p class="muted">Upload a CSV or Excel file. We’ll tidy headers & rows, remove duplicates (exact or fuzzy), compute quick stats, and generate a chart. All locally.</p>
 
       <div class="grid">
         <div class="card">
@@ -50,9 +54,21 @@
             </div>
           </div>
 
+          <div class="row" style="margin-top:12px">
+            <div>
+              <label><input type="checkbox" id="fuzzyToggle" /> Fuzzy de-dupe</label>
+              <small class="muted">Matches near-identical values (Jaro–Winkler)</small>
+            </div>
+            <div>
+              <label>Fuzzy threshold (0.85–0.98)</label>
+              <input type="number" id="fuzzyThreshold" min="0.80" max="0.99" step="0.01" value="0.92" />
+            </div>
+          </div>
+
           <div style="margin-top:12px">
             <button class="btn primary" id="processBtn">Process</button>
             <button class="btn" id="downloadCleanBtn" disabled>⬇️ Download Clean CSV</button>
+            <button class="btn" id="downloadXLSXBtn" disabled>⬇️ Download Excel (.xlsx)</button>
             <button class="btn" id="downloadSummaryBtn" disabled>⬇️ Download Summary</button>
           </div>
 
@@ -84,7 +100,7 @@
     <!-- MEETINGS TAB -->
     <section id="meetings" class="tab card" style="display:none;">
       <h1>📝 Meeting Notes → Summary & Action Items</h1>
-      <p class="muted">Paste raw notes or a transcript. We’ll create a concise summary and extract action items with owners/dates using local heuristics.</p>
+      <p class="muted">Paste raw notes or a transcript. We’ll create a concise summary and extract action items with owners/dates (parsed to ISO if possible).</p>
       <div class="row">
         <div class="card">
           <label for="notesInput">Paste notes / transcript</label>
@@ -115,21 +131,20 @@
     <!-- ABOUT TAB -->
     <section id="about" class="tab card" style="display:none;">
       <h1>ℹ️ About this Project</h1>
-      <p>This is a zero‑cost, browser‑only toolkit. No servers, no API keys, no data leaves your device.</p>
+      <p>This is a zero-cost, browser-only toolkit. No servers, no API keys, no data leaves your device.</p>
       <h2>How to publish for free on GitHub Pages</h2>
       <ol>
         <li>Create a new public repo on GitHub (e.g., <code>utility-ai-toolkit</code>).</li>
         <li>Add these files. Make sure <code>index.html</code> is at the root.</li>
         <li>Go to <em>Settings → Pages</em> → set Source to <em>Deploy from a branch</em>, pick <em>main</em> and <em>/root</em>. Save.</li>
-        <li>Your site appears at <code>https://&lt;your-username&gt;.github.io/utility-ai-toolkit/</code>.</li>
+        <li>Your site appears at <code>https://&lt;your-username&gt;.github.io/&lt;repo&gt;/</code>.</li>
       </ol>
       <p class="notice">Note: External libraries load from public CDNs. For 100% offline, download those JS files into this repo and update the <code>&lt;script src&gt;</code> tags.</p>
-      <h2>Roadmap (all still free/local)</h2>
+      <h2>Roadmap</h2>
       <ul>
-        <li>Add XLSX export (currently CSV).</li>
-        <li>Fuzzy dedupe (multi-key, Jaro/Levenshtein).</li>
-        <li>Better meeting extraction (date parsing via chrono‑node).</li>
-        <li>Optional: PWA for offline cache.</li>
+        <li>Self-host vendor JS for full offline use.</li>
+        <li>Advanced charts and pivoting.</li>
+        <li>Optional on-device ML summarizer via Transformers.js.</li>
       </ul>
     </section>
 
@@ -139,3 +154,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+
