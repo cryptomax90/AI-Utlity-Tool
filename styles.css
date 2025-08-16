@@ -36,20 +36,18 @@ header {
 h1 { margin: 8px 0 12px; font-size: 24px; }
 h2 { margin: 10px 0; font-size: 18px; color: var(--muted); }
 label { display: block; margin: 10px 0 6px; color: var(--muted); }
-input[type="file"], textarea, select {
+input[type="file"], textarea, select, input[type="number"], input[type="text"] {
   width: 100%; background: #0b121a; color: var(--text); border: 1px solid var(--border);
   border-radius: 10px; padding: 10px; resize: vertical;
 }
 textarea { min-height: 160px; }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.row-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
   background: linear-gradient(180deg, #1d2a38, #16222f);
   color: var(--text); border: 1px solid var(--border); padding: 10px 14px; border-radius: 10px; cursor: pointer;
 }
 .btn.primary { background: linear-gradient(180deg, #0f65b8, #0a4d8d); border-color: #0a58a5; }
-.btn.ghost { background: transparent; }
 .btn + .btn { margin-left: 8px; }
 .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
 .muted { color: var(--muted); }
