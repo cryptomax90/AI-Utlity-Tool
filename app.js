@@ -32,7 +32,46 @@ function saveCSV(filename, rows) {
   a.download = filename; a.click(); URL.revokeObjectURL(a.href);
 }
 
-// -------- SHEETS: parse / clean / stats --------
+// Jaro-Winkler similarity
+function jaroWinkler(s1='', s2='') {
+  if (s1 === s2) return 1;
+  const m = Math.floor(Math.max(s1.length, s2.length)/2)-1;
+  const mt1 = new Array(s1.length).fill(false);
+  const mt2 = new Array(s2.length).fill(false);
+  let matches = 0, transpositions = 0;
+
+  for (let i=0;i<s1.length;i++) {
+    const start = Math.max(0, i - m), end = Math.min(i + m + 1, s2.length);
+    for (let j=start;j<end;j++) {
+      if (mt2[j]) continue;
+      if (s1[i] === s2[j]) { mt1[i]=true; mt2[j]=true; matches++; break; }
+    }
+  }
+  if (!matches) return 0;
+
+  let k=0;
+  for (let i=0;i<s1.length;i++) if (mt1[i]) {
+    while (!mt2[k]) k++;
+    if (s1[i] !== s2[k]) transpositions++;
+    k++;
+  }
+  const jaro = (matches/s1.length + matches/s2.length + (matches - transpositions/2)/matches) / 3;
+
+  // Winkler prefix boost
+  let prefix = 0;
+  for (let i=0;i<Math.min(4, s1.length, s2.length); i++) {
+    if (s1[i] === s2[i]) prefix++; else break;
+  }
+  return jaro + prefix * 0.1 * (1 - jaro);
+}
+
+function fuzzyEqualRows(rowA, rowB, keyIdx=[], threshold=0.92) {
+  if (!keyIdx.length) return false;
+  const sims = keyIdx.map(i => jaroWinkler(String(rowA[i] ?? '').toLowerCase(), String(rowB[i] ?? '').toLowerCase()));
+  return sims.every(s => s >= threshold);
+}
+
+// -------- SHEETS --------
 let cleanedRows = [], cleanedHeaders = [], numericColumns = [], numericIdx = [];
 let chart, tableBuilt = false;
 
@@ -53,7 +92,7 @@ function parseXLSX(file) {
       const workbook = XLSX.read(data, {type: 'array'});
       const firstSheet = workbook.SheetNames[0];
       const sheet = workbook.Sheets[firstSheet];
-      const arr = XLSX.utils.sheet_to_json(sheet, {defval: ''}); // array of objects
+      const arr = XLSX.utils.sheet_to_json(sheet, {defval: ''});
       resolve(arr);
     };
     reader.onerror = reject;
@@ -113,11 +152,29 @@ async function handleProcess() {
     const keys = dedupeKeys.split(',').map(s => s.trim().toLowerCase().replace(/\s+/g,'_'));
     keyIdx = keys.map(k => headers.indexOf(k)).filter(i => i >= 0);
   }
-  const seen = new Set(); const deduped = [];
+  const fuzzy = document.getElementById('fuzzyToggle').checked;
+  const threshold = parseFloat(document.getElementById('fuzzyThreshold').value || '0.92');
+
+  const seen = new Set();
+  const deduped = [];
   for (const row of body) {
-    const sig = keyIdx.length ? keyIdx.map(i => (row[i] ?? '').toString().toLowerCase()).join('||')
-                              : row.join('||').toLowerCase();
-    if (sig && !seen.has(sig)) { seen.add(sig); deduped.push(row); }
+    const sig = keyIdx.length
+      ? keyIdx.map(i => (row[i] ?? '').toString().toLowerCase()).join('||')
+      : row.join('||').toLowerCase();
+
+    let isDup = false;
+    if (seen.has(sig)) {
+      isDup = true;
+    } else if (fuzzy && keyIdx.length) {
+      for (const existing of deduped) {
+        if (fuzzyEqualRows(row, existing, keyIdx, threshold)) { isDup = true; break; }
+      }
+    }
+
+    if (!isDup) {
+      seen.add(sig);
+      deduped.push(row);
+    }
   }
 
   cleanedHeaders = headers;
@@ -128,12 +185,22 @@ async function handleProcess() {
   status.innerHTML = `<span class="success">Done. Rows: ${deduped.length}, Columns: ${headers.length}</span>`;
   document.getElementById('downloadCleanBtn').disabled = false;
   document.getElementById('downloadSummaryBtn').disabled = false;
+  document.getElementById('downloadXLSXBtn').disabled = false;
 }
 
 document.getElementById('downloadCleanBtn').addEventListener('click', () => {
   if (!cleanedRows.length) return;
   const rows = [cleanedHeaders, ...cleanedRows];
   saveCSV('cleaned.csv', rows);
+});
+
+document.getElementById('downloadXLSXBtn').addEventListener('click', () => {
+  if (!cleanedRows.length) return;
+  const aoa = [cleanedHeaders, ...cleanedRows];
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Cleaned');
+  XLSX.writeFile(wb, 'cleaned.xlsx');
 });
 
 function computeStats(matrix) {
@@ -163,7 +230,6 @@ function computeStats(matrix) {
     const opt = document.createElement('option'); opt.value = String(i); opt.textContent = name; sel.appendChild(opt);
   });
 
-  // Show per-numeric basic stats
   const container = document.getElementById('numStats');
   container.innerHTML = '';
   numericIdx.forEach((j, idx) => {
@@ -199,45 +265,7 @@ function buildPreviewTable(matrix, limit=200) {
   tableBuilt = true;
 }
 
-document.getElementById('numericColumnSelect').addEventListener('change', (e) => {
-  const idxInNumeric = +e.target.value;
-  const canvas = document.getElementById('chartCanvas').getContext('2d');
-  if (isNaN(idxInNumeric)) { if (chart) chart.destroy(); return; }
-  const j = numericIdx[idxInNumeric];
-  const label = numericColumns[idxInNumeric];
-  const labels = cleanedRows.map((_, i) => String(i+1));
-  const values = cleanedRows.map(r => +r[j]).filter(v => !isNaN(v));
-  if (chart) chart.destroy();
-  chart = new Chart(canvas, {
-    type: 'bar',
-    data: { labels, datasets: [{ label: label, data: values }] },
-    options: { responsive: true, scales: { x: { ticks: { display: false } } } }
-  });
-});
-
-document.getElementById('downloadSummaryBtn').addEventListener('click', () => {
-  if (!cleanedRows.length) return;
-  let out = [];
-  out.push('Spreadsheet Summary');
-  out.push('===================');
-  out.push(`Rows: ${cleanedRows.length}`);
-  out.push(`Columns: ${cleanedHeaders.length}`);
-  if (numericIdx.length) {
-    out.push('');
-    out.push('Numeric Columns:');
-    cleanedRows.length && numericIdx.forEach((j, k) => {
-      const vals = cleanedRows.map(r => +r[j]).filter(v => !isNaN(v));
-      if (!vals.length) return;
-      const min = Math.min(...vals);
-      const max = Math.max(...vals);
-      const mean = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2);
-      out.push(`- ${numericColumns[k]} → min ${min}, max ${max}, mean ${mean}`);
-    });
-  }
-  saveText('summary.txt', out.join('\n'));
-});
-
-// -------- MEETINGS: summarize & extract actions (local heuristics) --------
+// -------- MEETINGS --------
 function splitSentences(text) {
   return text
     .replace(/\n+/g, ' ')
@@ -263,6 +291,17 @@ function summarize(text, n=5) {
   scored.sort((a,b) => b.score - a.score);
   const top = scored.slice(0, n).sort((a,b) => a.i - b.i).map(x => x.s);
   return top;
+}
+
+function normalizeDue(str) {
+  try {
+    const r = chrono.parse(str);
+    if (r && r.length) {
+      const d = r[0].start.date();
+      return d.toISOString().slice(0,10);
+    }
+  } catch(e){}
+  return str;
 }
 
 function extractActions(text) {
@@ -297,7 +336,7 @@ function extractActions(text) {
     }
 
     if (isAction) {
-      actions.push({ text: l.replace(/^\-+\s*/,'').trim(), owner: owner || 'Unassigned', due: due || '—' });
+      actions.push({ text: l.replace(/^\-+\s*/,'').trim(), owner: owner || 'Unassigned', due: due ? normalizeDue(due) : '—' });
     }
   });
 
@@ -339,6 +378,13 @@ document.getElementById('downloadMeetingBtn').addEventListener('click', () => {
     'Action Items',
     '============',
     ...lis.map((t, i) => `${i+1}. ${t}`)
-  ].join('\\n');
+  ].join('\n');
   saveText('meeting_summary.txt', out);
 });
+
+// PWA: register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(console.error);
+  });
+}
