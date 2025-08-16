@@ -36,7 +36,7 @@ header {
 h1 { margin: 8px 0 12px; font-size: 24px; }
 h2 { margin: 10px 0; font-size: 18px; color: var(--muted); }
 label { display: block; margin: 10px 0 6px; color: var(--muted); }
-input[type="file"], textarea, select, input[type="number"], input[type="text"] {
+input[type="file"], textarea, select, input[type="text"] {
   width: 100%; background: #0b121a; color: var(--text); border: 1px solid var(--border);
   border-radius: 10px; padding: 10px; resize: vertical;
 }
