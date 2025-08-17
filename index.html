@@ -8,43 +8,42 @@
 </head>
 <body>
   <nav class="navbar">
-    <h1>Utility AI Toolkit</h1>
-    <ul>
-      <li><a href="#ai-settings">AI Settings</a></li>
-      <li><a href="#branding">Branding</a></li>
-      <li><a href="#spreadsheets">Spreadsheets</a></li>
-      <li><a href="#meeting-notes">Meeting Notes</a></li>
-    </ul>
+    <h1 class="app-title">Utility AI Toolkit</h1>
+    <div class="nav-actions">
+      <button id="btn-branding" class="btn-outline">Branding</button>
+    </div>
   </nav>
+
   <main>
-    <section id="ai-settings">
-      <h2>AI Settings</h2>
-      <label>Proxy URL: <input type="text" id="proxy-url" /></label><br/>
-      <label>Access Token: <input type="text" id="access-token" /></label><br/>
-      <button id="test-connection">Test Connection</button>
-      <div id="connection-result"></div>
+    <!-- HOME / MENU -->
+    <section id="home" class="section visible">
+      <div class="hero">
+        <h2>What would you like to do?</h2>
+        <div class="btn-grid">
+          <button id="go-spreadsheets" class="btn-large">Spreadsheet Analyzer</button>
+          <button id="go-notes" class="btn-large">Meeting Notes Summarizer</button>
+        </div>
+      </div>
     </section>
 
-    <section id="branding">
-      <h2>Branding</h2>
-      <label>Company Name: <input type="text" id="company-name" /></label><br/>
-      <label>Primary Color: <input type="color" id="primary-color" value="#2a9d8f" /></label><br/>
-      <label>Secondary Color: <input type="color" id="secondary-color" value="#264653" /></label><br/>
-      <label>Logo: <input type="file" id="logo-upload" accept="image/*" /></label>
-      <div id="branding-preview" class="branding-preview"></div>
-      <button id="save-branding">Save Branding</button>
-    </section>
-
-    <section id="spreadsheets">
-      <h2>Spreadsheet Analyzer</h2>
-      <input type="file" id="spreadsheet-upload" accept=".csv, .xlsx" />
+    <!-- SPREADSHEET ANALYZER -->
+    <section id="spreadsheets" class="section">
+      <div class="section-header">
+        <h2>Spreadsheet Analyzer</h2>
+        <button class="btn-link" data-back>← Back</button>
+      </div>
+      <input type="file" id="spreadsheet-upload" accept=".csv,.xlsx" />
       <button id="analyze-spreadsheet">Run AI Clean + Insights</button>
       <div id="spreadsheet-results"></div>
       <button id="download-cleaned" style="display:none;">Download Cleaned File</button>
     </section>
 
-    <section id="meeting-notes">
-      <h2>Meeting Notes Summarizer</h2>
+    <!-- MEETING NOTES SUMMARIZER -->
+    <section id="meeting-notes" class="section">
+      <div class="section-header">
+        <h2>Meeting Notes Summarizer</h2>
+        <button class="btn-link" data-back>← Back</button>
+      </div>
       <textarea id="meeting-text" rows="8" cols="50" placeholder="Paste raw notes here..."></textarea><br/>
       <input type="file" id="notes-attachments" accept=".pdf,.docx,.txt" multiple />
       <button id="summarize-notes">Run AI Summary</button>
@@ -52,7 +51,22 @@
       <button id="download-pdf" style="display:none;">Download Branded PDF</button>
       <button id="download-docx" style="display:none;">Download Branded DOCX</button>
     </section>
+
+    <!-- BRANDING (opened from top-right button) -->
+    <section id="branding" class="section">
+      <div class="section-header">
+        <h2>Branding</h2>
+        <button class="btn-link" data-close-branding>✕ Close</button>
+      </div>
+      <label>Company Name: <input type="text" id="company-name" /></label><br/>
+      <label>Primary Color: <input type="color" id="primary-color" value="#2a9d8f" /></label><br/>
+      <label>Secondary Color: <input type="color" id="secondary-color" value="#264653" /></label><br/>
+      <label>Logo: <input type="file" id="logo-upload" accept="image/*" /></label>
+      <div id="branding-preview" class="branding-preview"></div>
+      <button id="save-branding">Save Branding</button>
+    </section>
   </main>
+
   <script src="app.js"></script>
 </body>
 </html>
