@@ -3,95 +3,103 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Utility AI Toolkit — AI Mode</title>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <title>Utility AI Toolkit — Branded Exports</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- libs -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chrono-node@2.7.5/dist/chrono.min.js"></script>
-  <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#0b0f14">
-  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-populate/browser/xlsx-populate.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.js"></script>
 </head>
 <body>
   <header>
-    <div class="brand">⚙️ Utility AI Toolkit — <strong>AI Mode</strong></div>
+    <div class="brand">⚙️ Utility AI Toolkit — <strong>Branding & Attachments</strong></div>
     <div class="inline">
-      <span class="pill">Local tools</span>
-      <span class="pill">+ Optional ChatGPT via proxy</span>
-      <span class="pill">No keys in browser</span>
+      <span class="pill">Local cleaning</span>
+      <span class="pill">AI proxy</span>
+      <span class="pill">Branded Excel/PDF</span>
+      <span class="pill">PDF/DOCX ingest</span>
     </div>
   </header>
 
   <div class="wrap">
     <div class="tabs">
-      <button class="tab-btn active" data-tab="sheets">📊 Spreadsheet Cleaner & Analyzer</button>
-      <button class="tab-btn" data-tab="meetings">📝 Meeting Notes → Summary & Actions</button>
+      <button class="tab-btn active" data-tab="sheets">📊 Spreadsheets</button>
+      <button class="tab-btn" data-tab="meetings">📝 Meeting Summaries</button>
+      <button class="tab-btn" data-tab="branding">🎨 Branding</button>
       <button class="tab-btn" data-tab="settings">🔐 AI Settings</button>
-      <button class="tab-btn" data-tab="about">ℹ️ About</button>
     </div>
 
-    <!-- SETTINGS TAB -->
-    <section id="settings" class="tab card" style="display:none;">
-      <h1>🔐 AI Settings</h1>
-      <p class="muted">To use ChatGPT-quality results, route requests through your own small proxy (Cloudflare Worker or Vercel). This keeps your OpenAI API key off the client.</p>
-      <div class="row">
+    <!-- Branding Tab -->
+    <section id="branding" class="tab card" style="display:none;">
+      <h1>🎨 Branding</h1>
+      <div class="grid">
         <div class="card">
-          <label>Proxy URL (e.g., https://your-worker.example.workers.dev/chat)</label>
-          <input id="proxyUrl" type="text" placeholder="https://your-proxy/chat" />
-          <label>Access Token (optional, set in your proxy)</label>
-          <input id="proxyToken" type="text" placeholder="token from your proxy (if configured)" />
-          <label>Model</label>
-          <select id="model">
-            <option value="gpt-4o-mini" selected>gpt-4o-mini (fast, cost-effective)</option>
-            <option value="gpt-4o">gpt-4o (higher quality)</option>
-          </select>
+          <label>Company Name</label>
+          <input id="brandCompany" type="text" placeholder="Acme Corp" />
+          <label>Primary Color</label>
+          <input id="brandPrimary" type="color" value="#0f65b8" />
+          <label>Secondary Color</label>
+          <input id="brandSecondary" type="color" value="#66e0a3" />
+          <label>Logo (PNG/JPG)</label>
+          <input id="brandLogo" type="file" accept="image/png,image/jpeg" />
           <div style="margin-top:12px;">
-            <button class="btn primary" id="saveAiSettings">Save Settings</button>
-            <button class="btn" id="testAi">Test Connection</button>
+            <button class="btn primary" id="saveBrand">Save Branding</button>
+            <button class="btn" id="resetBrand">Reset</button>
           </div>
-          <p id="aiStatus" class="muted" style="margin-top:10px;"></p>
+          <p id="brandStatus" class="muted" style="margin-top:8px;"></p>
         </div>
         <div class="card">
-          <h2>Setup guide</h2>
-          <ol>
-            <li>Deploy the included <strong>Cloudflare Worker</strong> or <strong>Vercel function</strong> (files in this ZIP).</li>
-            <li>Set environment var <code>OPENAI_API_KEY</code> in the proxy.</li>
-            <li>(Optional) Set <code>ACCESS_TOKEN</code> to protect your endpoint.</li>
-            <li>Paste the proxy URL/token here and hit <em>Save</em>.</li>
-          </ol>
+          <h2>Preview</h2>
+          <div class="brandPreview">
+            <div id="brandPreviewLogo" class="logoBox">LOGO</div>
+            <div id="brandPreviewName" class="companyBox">Company Name</div>
+            <div class="swatches">
+              <div id="swPrimary" class="swatch"></div>
+              <div id="swSecondary" class="swatch"></div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- SHEETS TAB -->
+    <!-- AI Settings -->
+    <section id="settings" class="tab card" style="display:none;">
+      <h1>🔐 AI Settings</h1>
+      <div class="card">
+        <label>Proxy URL</label>
+        <input id="proxyUrl" type="text" placeholder="https://your-worker.workers.dev/" />
+        <label>Access Token (if required)</label>
+        <input id="proxyToken" type="text" placeholder="ACCESS_TOKEN" />
+        <label>Model</label>
+        <select id="model">
+          <option value="gpt-4o-mini" selected>gpt-4o-mini</option>
+          <option value="gpt-4o">gpt-4o</option>
+        </select>
+        <div style="margin-top:12px;">
+          <button class="btn primary" id="saveAiSettings">Save</button>
+          <button class="btn" id="testAi">Test Connection</button>
+        </div>
+        <p id="aiStatus" class="muted" style="margin-top:8px;"></p>
+      </div>
+    </section>
+
+    <!-- Spreadsheets (same features as earlier bundle) -->
     <section id="sheets" class="tab card">
       <h1>📊 Spreadsheet Cleaner & Analyzer</h1>
-      <p class="muted">Local cleaning + stats. Optional: ask AI for deeper insights.</p>
-
+      <p class="muted">Clean locally, analyze with AI, export **branded** Excel.</p>
       <div class="grid">
         <div class="card">
-          <label for="fileInput">Upload file (.csv, .xlsx)</label>
+          <label for="fileInput">Upload (.csv, .xlsx)</label>
           <input id="fileInput" type="file" accept=".csv,.xlsx,.xls" />
-          <div class="row" style="margin-top:12px">
-            <div>
-              <label>Duplicate check on columns (comma-separated)</label>
-              <input type="text" id="dedupeCols" placeholder="e.g. email, id (optional)" />
-            </div>
-            <div>
-              <label><input type="checkbox" id="fuzzyToggle" /> Fuzzy de-dupe</label>
-              <small class="muted">Jaro–Winkler</small>
-            </div>
-          </div>
-          <div style="margin-top:12px">
+          <div style="margin-top:12px;">
             <button class="btn primary" id="processBtn">Process</button>
-            <button class="btn" id="downloadCleanBtn" disabled>⬇️ Clean CSV</button>
-            <button class="btn" id="downloadXLSXBtn" disabled>⬇️ Excel (.xlsx)</button>
-            <button class="btn" id="downloadSummaryBtn" disabled>⬇️ Summary</button>
+            <button class="btn" id="makePresentableBtn" disabled>🎨 Make Branded Excel</button>
           </div>
-          <p id="sheetStatus" class="muted" style="margin-top:10px;"></p>
-
+          <p id="sheetStatus" class="muted" style="margin-top:8px;"></p>
           <div id="tableWrap" class="card" style="display:none;">
             <h2>Cleaned Preview</h2>
             <div style="max-height:320px; overflow:auto;">
@@ -99,49 +107,39 @@
             </div>
           </div>
         </div>
-
         <div class="card">
-          <h2>Quick Stats</h2>
-          <div class="row">
-            <div><span class="muted">Rows:</span> <strong id="statRows">–</strong></div>
-            <div><span class="muted">Columns:</span> <strong id="statCols">–</strong></div>
-          </div>
-          <div id="numStats" style="margin-top:10px;"></div>
-
-          <h2 style="margin-top:16px;">AI Insights (optional)</h2>
-          <button class="btn" id="askAiInsights">🤖 Ask AI for insights</button>
-          <div id="aiInsightsBox" class="muted" style="margin-top:10px;">—</div>
-
-          <h2 style="margin-top:16px;">Chart a numeric column</h2>
-          <select id="numericColumnSelect"><option value="">(none)</option></select>
-          <canvas id="chartCanvas" style="margin-top:10px;"></canvas>
+          <h2>AI Insights</h2>
+          <button class="btn" id="askAiInsights">🤖 Ask AI</button>
+          <div id="aiInsightsBox" class="muted" style="margin-top:8px;">—</div>
         </div>
       </div>
     </section>
 
-    <!-- MEETINGS TAB -->
+    <!-- Meetings with attachments & branded PDF export -->
     <section id="meetings" class="tab card" style="display:none;">
-      <h1>📝 Meeting Notes → Summary & Action Items</h1>
-      <p class="muted">Choose local (free) or AI mode (better quality). AI uses your proxy.</p>
-      <div class="row">
+      <h1>📝 Meeting Notes → Branded Summary</h1>
+      <div class="grid">
         <div class="card">
-          <label for="notesInput">Paste notes / transcript</label>
-          <textarea id="notesInput" placeholder="Paste your meeting notes here..."></textarea>
+          <label>Paste notes / transcript</label>
+          <textarea id="notesInput" placeholder="Paste notes here…"></textarea>
+          <label>Attach documents (PDF, DOCX, TXT)</label>
+          <input id="notesFiles" type="file" multiple accept=".pdf,.docx,.txt" />
           <div class="inline" style="margin-top:8px;">
             <label><input type="radio" name="sumMode" value="local" checked /> Local</label>
             <label><input type="radio" name="sumMode" value="ai" /> AI</label>
-            <label for="numSentences" style="margin:0;">Summary length</label>
+            <label for="numSentences" style="margin:0;">Length</label>
             <select id="numSentences">
-              <option value="3">3 sentences</option>
-              <option value="5" selected>5 sentences</option>
-              <option value="8">8 sentences</option>
+              <option value="3">3</option>
+              <option value="5" selected>5</option>
+              <option value="8">8</option>
             </select>
           </div>
           <div style="margin-top:12px;">
             <button class="btn primary" id="summarizeBtn">Summarize</button>
-            <button class="btn" id="downloadMeetingBtn" disabled>⬇️ Download Summary & Actions</button>
+            <button class="btn" id="exportBrandedPdfBtn" disabled>⬇️ Download Branded PDF</button>
           </div>
-          <p class="muted" style="margin-top:8px;">AI mode uses your proxy URL/token from Settings.</p>
+          <p class="muted">AI mode uses your proxy URL/token from Settings.</p>
+          <p id="attachStatus" class="muted"></p>
         </div>
         <div class="card">
           <h2>Summary</h2>
@@ -151,14 +149,6 @@
         </div>
       </div>
     </section>
-
-    <!-- ABOUT -->
-    <section id="about" class="tab card" style="display:none;">
-      <h1>ℹ️ About</h1>
-      <p>Local utilities + optional AI via your own secure proxy.</p>
-    </section>
-
-    <div class="foot">© You — build, ship, iterate. ✨</div>
   </div>
 
   <script src="app.js"></script>
