@@ -1,156 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Utility AI Toolkit — Branded Exports</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Utility AI Toolkit</title>
   <link rel="stylesheet" href="styles.css" />
-  <!-- libs -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx-populate/browser/xlsx-populate.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mammoth/mammoth.browser.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.js"></script>
 </head>
 <body>
-  <header>
-    <div class="brand">⚙️ Utility AI Toolkit — <strong>Branding & Attachments</strong></div>
-    <div class="inline">
-      <span class="pill">Local cleaning</span>
-      <span class="pill">AI proxy</span>
-      <span class="pill">Branded Excel/PDF</span>
-      <span class="pill">PDF/DOCX ingest</span>
-    </div>
-  </header>
-
-  <div class="wrap">
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="sheets">📊 Spreadsheets</button>
-      <button class="tab-btn" data-tab="meetings">📝 Meeting Summaries</button>
-      <button class="tab-btn" data-tab="branding">🎨 Branding</button>
-      <button class="tab-btn" data-tab="settings">🔐 AI Settings</button>
-    </div>
-
-    <!-- Branding Tab -->
-    <section id="branding" class="tab card" style="display:none;">
-      <h1>🎨 Branding</h1>
-      <div class="grid">
-        <div class="card">
-          <label>Company Name</label>
-          <input id="brandCompany" type="text" placeholder="Acme Corp" />
-          <label>Primary Color</label>
-          <input id="brandPrimary" type="color" value="#0f65b8" />
-          <label>Secondary Color</label>
-          <input id="brandSecondary" type="color" value="#66e0a3" />
-          <label>Logo (PNG/JPG)</label>
-          <input id="brandLogo" type="file" accept="image/png,image/jpeg" />
-          <div style="margin-top:12px;">
-            <button class="btn primary" id="saveBrand">Save Branding</button>
-            <button class="btn" id="resetBrand">Reset</button>
-          </div>
-          <p id="brandStatus" class="muted" style="margin-top:8px;"></p>
-        </div>
-        <div class="card">
-          <h2>Preview</h2>
-          <div class="brandPreview">
-            <div id="brandPreviewLogo" class="logoBox">LOGO</div>
-            <div id="brandPreviewName" class="companyBox">Company Name</div>
-            <div class="swatches">
-              <div id="swPrimary" class="swatch"></div>
-              <div id="swSecondary" class="swatch"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+  <nav class="navbar">
+    <h1>Utility AI Toolkit</h1>
+    <ul>
+      <li><a href="#ai-settings">AI Settings</a></li>
+      <li><a href="#branding">Branding</a></li>
+      <li><a href="#spreadsheets">Spreadsheets</a></li>
+      <li><a href="#meeting-notes">Meeting Notes</a></li>
+    </ul>
+  </nav>
+  <main>
+    <section id="ai-settings">
+      <h2>AI Settings</h2>
+      <label>Proxy URL: <input type="text" id="proxy-url" /></label><br/>
+      <label>Access Token: <input type="text" id="access-token" /></label><br/>
+      <button id="test-connection">Test Connection</button>
+      <div id="connection-result"></div>
     </section>
 
-    <!-- AI Settings -->
-    <section id="settings" class="tab card" style="display:none;">
-      <h1>🔐 AI Settings</h1>
-      <div class="card">
-        <label>Proxy URL</label>
-        <input id="proxyUrl" type="text" placeholder="https://your-worker.workers.dev/" />
-        <label>Access Token (if required)</label>
-        <input id="proxyToken" type="text" placeholder="ACCESS_TOKEN" />
-        <label>Model</label>
-        <select id="model">
-          <option value="gpt-4o-mini" selected>gpt-4o-mini</option>
-          <option value="gpt-4o">gpt-4o</option>
-        </select>
-        <div style="margin-top:12px;">
-          <button class="btn primary" id="saveAiSettings">Save</button>
-          <button class="btn" id="testAi">Test Connection</button>
-        </div>
-        <p id="aiStatus" class="muted" style="margin-top:8px;"></p>
-      </div>
+    <section id="branding">
+      <h2>Branding</h2>
+      <label>Company Name: <input type="text" id="company-name" /></label><br/>
+      <label>Primary Color: <input type="color" id="primary-color" value="#2a9d8f" /></label><br/>
+      <label>Secondary Color: <input type="color" id="secondary-color" value="#264653" /></label><br/>
+      <label>Logo: <input type="file" id="logo-upload" accept="image/*" /></label>
+      <div id="branding-preview" class="branding-preview"></div>
+      <button id="save-branding">Save Branding</button>
     </section>
 
-    <!-- Spreadsheets (same features as earlier bundle) -->
-    <section id="sheets" class="tab card">
-      <h1>📊 Spreadsheet Cleaner & Analyzer</h1>
-      <p class="muted">Clean locally, analyze with AI, export **branded** Excel.</p>
-      <div class="grid">
-        <div class="card">
-          <label for="fileInput">Upload (.csv, .xlsx)</label>
-          <input id="fileInput" type="file" accept=".csv,.xlsx,.xls" />
-          <div style="margin-top:12px;">
-            <button class="btn primary" id="processBtn">Process</button>
-            <button class="btn" id="makePresentableBtn" disabled>🎨 Make Branded Excel</button>
-          </div>
-          <p id="sheetStatus" class="muted" style="margin-top:8px;"></p>
-          <div id="tableWrap" class="card" style="display:none;">
-            <h2>Cleaned Preview</h2>
-            <div style="max-height:320px; overflow:auto;">
-              <table id="previewTable"></table>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <h2>AI Insights</h2>
-          <button class="btn" id="askAiInsights">🤖 Ask AI</button>
-          <div id="aiInsightsBox" class="muted" style="margin-top:8px;">—</div>
-        </div>
-      </div>
+    <section id="spreadsheets">
+      <h2>Spreadsheet Analyzer</h2>
+      <input type="file" id="spreadsheet-upload" accept=".csv, .xlsx" />
+      <button id="analyze-spreadsheet">Run AI Clean + Insights</button>
+      <div id="spreadsheet-results"></div>
+      <button id="download-cleaned" style="display:none;">Download Cleaned File</button>
     </section>
 
-    <!-- Meetings with attachments & branded PDF export -->
-    <section id="meetings" class="tab card" style="display:none;">
-      <h1>📝 Meeting Notes → Branded Summary</h1>
-      <div class="grid">
-        <div class="card">
-          <label>Paste notes / transcript</label>
-          <textarea id="notesInput" placeholder="Paste notes here…"></textarea>
-          <label>Attach documents (PDF, DOCX, TXT)</label>
-          <input id="notesFiles" type="file" multiple accept=".pdf,.docx,.txt" />
-          <div class="inline" style="margin-top:8px;">
-            <label><input type="radio" name="sumMode" value="local" checked /> Local</label>
-            <label><input type="radio" name="sumMode" value="ai" /> AI</label>
-            <label for="numSentences" style="margin:0;">Length</label>
-            <select id="numSentences">
-              <option value="3">3</option>
-              <option value="5" selected>5</option>
-              <option value="8">8</option>
-            </select>
-          </div>
-          <div style="margin-top:12px;">
-            <button class="btn primary" id="summarizeBtn">Summarize</button>
-            <button class="btn" id="exportBrandedPdfBtn" disabled>⬇️ Download Branded PDF</button>
-          </div>
-          <p class="muted">AI mode uses your proxy URL/token from Settings.</p>
-          <p id="attachStatus" class="muted"></p>
-        </div>
-        <div class="card">
-          <h2>Summary</h2>
-          <div id="summaryBox" class="muted">—</div>
-          <h2 style="margin-top:16px;">Action Items</h2>
-          <ol id="actionsList"></ol>
-        </div>
-      </div>
+    <section id="meeting-notes">
+      <h2>Meeting Notes Summarizer</h2>
+      <textarea id="meeting-text" rows="8" cols="50" placeholder="Paste raw notes here..."></textarea><br/>
+      <input type="file" id="notes-attachments" accept=".pdf,.docx,.txt" multiple />
+      <button id="summarize-notes">Run AI Summary</button>
+      <div id="notes-results"></div>
+      <button id="download-pdf" style="display:none;">Download Branded PDF</button>
+      <button id="download-docx" style="display:none;">Download Branded DOCX</button>
     </section>
-  </div>
-
+  </main>
   <script src="app.js"></script>
 </body>
 </html>
