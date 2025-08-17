@@ -1,9 +1,47 @@
-async function callAI(endpoint, payload) {
-  const proxyUrl = document.getElementById('proxy-url').value;
-  const token = document.getElementById('access-token').value;
-  if (!proxyUrl) throw new Error("Proxy URL not set");
+// ====== CONFIG: AI settings are embedded here (no UI field needed) ======
+const CONFIG = {
+  PROXY_URL: "https://chatgpt-proxy.cryptomax90.workers.dev/",        // e.g. "https://your-proxy.example.com/v1/chat/completions"
+  ACCESS_TOKEN: "my-first-openai-api"      // Optional: "sk-..."
+};
 
-  const res = await fetch(proxyUrl, {
+// ====== Basic SPA navigation helpers ======
+const sections = {
+  home: document.getElementById('home'),
+  spreadsheets: document.getElementById('spreadsheets'),
+  notes: document.getElementById('meeting-notes'),
+  branding: document.getElementById('branding'),
+};
+
+function showSection(key) {
+  Object.values(sections).forEach(s => s.classList.remove('visible'));
+  sections[key].classList.add('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Home buttons
+document.getElementById('go-spreadsheets')?.addEventListener('click', () => showSection('spreadsheets'));
+document.getElementById('go-notes')?.addEventListener('click', () => showSection('notes'));
+
+// Back buttons
+document.querySelectorAll('[data-back]').forEach(el => el.addEventListener('click', () => showSection('home')));
+
+// Branding open/close
+document.getElementById('btn-branding')?.addEventListener('click', () => showSection('branding'));
+document.querySelector('[data-close-branding]')?.addEventListener('click', () => {
+  // If user came from home, go back there; otherwise default to home.
+  showSection('home');
+});
+
+// Start on home
+showSection('home');
+
+// ====== AI call helper using embedded CONFIG ======
+async function callAI(endpoint, payload) {
+  const proxyUrl = CONFIG.PROXY_URL;
+  const token = CONFIG.ACCESS_TOKEN;
+  if (!proxyUrl) throw new Error("Proxy URL not set in CONFIG.PROXY_URL");
+
+  const res = await fetch(proxyUrl + (endpoint || ""), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -17,61 +55,76 @@ async function callAI(endpoint, payload) {
   return await res.json();
 }
 
-// Branding preview
-document.getElementById('save-branding').onclick = () => {
-  const name = document.getElementById('company-name').value;
-  const primary = document.getElementById('primary-color').value;
-  const secondary = document.getElementById('secondary-color').value;
-  const preview = document.getElementById('branding-preview');
-  preview.innerHTML = `<div style='background:${primary};color:#000;padding:10px;border-radius:5px;'>${name || 'Company Name'}<br/>Primary: ${primary} | Secondary: ${secondary}</div>`;
-};
-
-// Test connection
-document.getElementById('test-connection').onclick = async () => {
-  try {
-    await callAI("", { messages: [{role:"user", content:"ping"}], model:"gpt-4o-mini" });
-    document.getElementById('connection-result').innerText = '✅ Connection looks good';
-  } catch (e) {
-    document.getElementById('connection-result').innerText = '❌ ' + e.message;
-  }
-};
-
-// Spreadsheet analyze
-document.getElementById('analyze-spreadsheet').onclick = async () => {
+// ====== Spreadsheet Analyzer ======
+document.getElementById('analyze-spreadsheet')?.addEventListener('click', async () => {
   const fileInput = document.getElementById('spreadsheet-upload');
-  if (!fileInput.files.length) return alert("Upload a spreadsheet");
+  if (!fileInput.files.length) return alert("Upload a spreadsheet first (.csv or .xlsx).");
+
+  const file = fileInput.files[0];
   const reader = new FileReader();
-  reader.onload = async e => {
+  reader.onload = async (e) => {
+    const text = e.target.result;
     try {
-      const text = e.target.result;
       const resp = await callAI("", {
         model: "gpt-4o-mini",
-        messages: [{
-          role:"system",
-          content:"You are a data cleaning assistant. Clean this CSV/XLSX text, return JSON with cleaned_csv, insights, recommendations."
-        },{role:"user", content:text}]
+        messages: [
+          { role: "system", content: "You are a data cleaning assistant. Produce JSON with keys: cleaned_csv (string) and insights (array of strings)." },
+          { role: "user", content: `Here is the file content (may be CSV or a serialized preview of XLSX):\n\n${text}` }
+        ]
       });
-      document.getElementById('spreadsheet-results').innerHTML = `<h3>Insights</h3><pre>${JSON.stringify(resp, null, 2)}</pre>`;
+      const resultsDiv = document.getElementById('spreadsheet-results');
+      resultsDiv.innerHTML = `<h3>Results</h3><pre>${JSON.stringify(resp, null, 2)}</pre>`;
       document.getElementById('download-cleaned').style.display = 'inline-block';
-    } catch (e) { alert(e.message); }
+      // Optionally: create a downloadable file from cleaned_csv if present
+      const cleanedBtn = document.getElementById('download-cleaned');
+      cleanedBtn.onclick = () => {
+        const cleaned = (resp.cleaned_csv) ? resp.cleaned_csv : (resp?.choices?.[0]?.message?.content || "");
+        const blob = new Blob([cleaned], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "cleaned.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+    } catch (e) {
+      alert(e.message);
+    }
   };
-  reader.readAsText(fileInput.files[0]);
-};
+  // Read as text; for .xlsx, this is a rough preview unless you add a parser like SheetJS.
+  reader.readAsText(file);
+});
 
-// Meeting notes summarize
-document.getElementById('summarize-notes').onclick = async () => {
-  const text = document.getElementById('meeting-text').value;
+// ====== Meeting Notes Summarizer ======
+document.getElementById('summarize-notes')?.addEventListener('click', async () => {
+  const textArea = document.getElementById('meeting-text');
+  const text = textArea.value.trim();
   if (!text) return alert("Paste some notes");
   try {
     const resp = await callAI("", {
       model: "gpt-4o-mini",
-      messages: [{
-        role:"system",
-        content:"You are a meeting summarizer. Summarize notes into JSON with summary and actions."
-      },{role:"user", content:text}]
+      messages: [
+        { role: "system", content: "You are a meeting summarizer. Return JSON: {summary: string, key_points: string[], action_items: string[] }." },
+        { role: "user", content: text }
+      ]
     });
     document.getElementById('notes-results').innerHTML = `<h3>Summary</h3><pre>${JSON.stringify(resp, null, 2)}</pre>`;
     document.getElementById('download-pdf').style.display = 'inline-block';
     document.getElementById('download-docx').style.display = 'inline-block';
-  } catch (e) { alert(e.message); }
-};
+  } catch (e) {
+    alert(e.message);
+  }
+});
+
+// ====== Branding (very simple preview) ======
+document.getElementById('save-branding')?.addEventListener('click', () => {
+  const name = document.getElementById('company-name').value || "Your Company";
+  const primary = document.getElementById('primary-color').value || "#2a9d8f";
+  const secondary = document.getElementById('secondary-color').value || "#264653";
+  const preview = document.getElementById('branding-preview');
+  preview.innerHTML = `<strong>${name}</strong> • Primary: ${primary} • Secondary: ${secondary}`;
+  // Apply primary color to buttons as a basic theming example
+  document.documentElement.style.setProperty('--primary', primary);
+  document.documentElement.style.setProperty('--secondary', secondary);
+});
+
