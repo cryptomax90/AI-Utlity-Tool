@@ -1,72 +1,47 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Utility AI Toolkit</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
   <nav class="navbar">
     <h1 class="app-title">Utility AI Toolkit</h1>
     <div class="nav-actions">
+      <a class="btn" href="tools/spreadsheets.html">Spreadsheet Analyzer</a>
+      <a class="btn" href="tools/notes.html">Meeting Notes</a>
       <button id="btn-branding" class="btn-outline">Branding</button>
     </div>
   </nav>
 
-  <main>
-    <!-- HOME / MENU -->
-    <section id="home" class="section visible">
-      <div class="hero">
-        <h2>What would you like to do?</h2>
-        <div class="btn-grid">
-          <button id="go-spreadsheets" class="btn-large">Spreadsheet Analyzer</button>
-          <button id="go-notes" class="btn-large">Meeting Notes Summarizer</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- SPREADSHEET ANALYZER -->
-    <section id="spreadsheets" class="section">
-      <div class="section-header">
-        <h2>Spreadsheet Analyzer</h2>
-        <button class="btn-link" data-back>← Back</button>
-      </div>
-      <input type="file" id="spreadsheet-upload" accept=".csv,.xlsx" />
-      <button id="analyze-spreadsheet">Run AI Clean + Insights</button>
-      <div id="spreadsheet-results"></div>
-      <button id="download-cleaned" style="display:none;">Download Cleaned File</button>
-    </section>
-
-    <!-- MEETING NOTES SUMMARIZER -->
-    <section id="meeting-notes" class="section">
-      <div class="section-header">
-        <h2>Meeting Notes Summarizer</h2>
-        <button class="btn-link" data-back>← Back</button>
-      </div>
-      <textarea id="meeting-text" rows="8" cols="50" placeholder="Paste raw notes here..."></textarea><br/>
-      <input type="file" id="notes-attachments" accept=".pdf,.docx,.txt" multiple />
-      <button id="summarize-notes">Run AI Summary</button>
-      <div id="notes-results"></div>
-      <button id="download-pdf" style="display:none;">Download Branded PDF</button>
-      <button id="download-docx" style="display:none;">Download Branded DOCX</button>
-    </section>
-
-    <!-- BRANDING (opened from top-right button) -->
-    <section id="branding" class="section">
-      <div class="section-header">
-        <h2>Branding</h2>
-        <button class="btn-link" data-close-branding>✕ Close</button>
-      </div>
-      <label>Company Name: <input type="text" id="company-name" /></label><br/>
-      <label>Primary Color: <input type="color" id="primary-color" value="#2a9d8f" /></label><br/>
-      <label>Secondary Color: <input type="color" id="secondary-color" value="#264653" /></label><br/>
-      <label>Logo: <input type="file" id="logo-upload" accept="image/*" /></label>
-      <div id="branding-preview" class="branding-preview"></div>
-      <button id="save-branding">Save Branding</button>
-    </section>
+  <main class="home">
+    <h2>What would you like to do?</h2>
+    <div class="btn-grid">
+      <a class="btn-large" href="tools/spreadsheets.html">Spreadsheet Analyzer</a>
+      <a class="btn-large" href="tools/notes.html">Meeting Notes Summarizer</a>
+    </div>
   </main>
 
-  <script src="app.js"></script>
+  <!-- Branding modal lives on every page via app-common.js. Provide the HTML shell here. -->
+  <div id="branding-modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Branding</h3>
+        <button class="icon" data-close>✕</button>
+      </div>
+      <div class="modal-body">
+        <label>Company Name <input type="text" id="company-name"></label>
+        <label>Primary Color <input type="color" id="primary-color" value="#2a9d8f"></label>
+        <label>Secondary Color <input type="color" id="secondary-color" value="#264653"></label>
+        <label>Logo <input type="file" id="logo-upload" accept="image/*"></label>
+        <div id="branding-preview" class="branding-preview"></div>
+        <button id="save-branding" class="btn">Save Branding</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/app-common.js"></script>
 </body>
 </html>
