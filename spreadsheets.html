@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spreadsheet Analyzer</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <a href="../index.html" class="btn-link">← Home</a>
+    <div class="spacer"></div>
+    <button id="btn-branding" class="btn-outline">Branding</button>
+  </nav>
+
+  <main class="section">
+    <h2>Spreadsheet Analyzer</h2>
+    <input type="file" id="spreadsheet-upload" accept=".csv,.xlsx" />
+    <button id="analyze-spreadsheet" class="btn">Run AI Clean + Insights</button>
+    <div id="spreadsheet-results" class="results"></div>
+    <button id="download-cleaned" class="btn" style="display:none;">Download Cleaned File</button>
+  </main>
+
+  <div id="branding-modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Branding</h3>
+        <button class="icon" data-close>✕</button>
+      </div>
+      <div class="modal-body">
+        <label>Company Name <input type="text" id="company-name"></label>
+        <label>Primary Color <input type="color" id="primary-color" value="#2a9d8f"></label>
+        <label>Secondary Color <input type="color" id="secondary-color" value="#264653"></label>
+        <label>Logo <input type="file" id="logo-upload" accept="image/*"></label>
+        <div id="branding-preview" class="branding-preview"></div>
+        <button id="save-branding" class="btn">Save Branding</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/app-common.js"></script>
+  <script src="../assets/spreadsheet.js"></script>
+</body>
+</html>
