@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meeting Notes Summarizer</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <a href="../index.html" class="btn-link">← Home</a>
+    <div class="spacer"></div>
+    <button id="btn-branding" class="btn-outline">Branding</button>
+  </nav>
+
+  <main class="section">
+    <h2>Meeting Notes Summarizer</h2>
+    <textarea id="meeting-text" rows="10" placeholder="Paste raw notes here..."></textarea>
+    <div class="actions">
+      <input type="file" id="notes-attachments" accept=".pdf,.docx,.txt" multiple />
+      <button id="summarize-notes" class="btn">Run AI Summary</button>
+    </div>
+    <div id="notes-results" class="results"></div>
+    <div class="actions">
+      <button id="download-pdf" class="btn" style="display:none;">Download Branded PDF</button>
+      <button id="download-docx" class="btn" style="display:none;">Download Branded DOCX</button>
+    </div>
+  </main>
+
+  <div id="branding-modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Branding</h3>
+        <button class="icon" data-close>✕</button>
+      </div>
+      <div class="modal-body">
+        <label>Company Name <input type="text" id="company-name"></label>
+        <label>Primary Color <input type="color" id="primary-color" value="#2a9d8f"></label>
+        <label>Secondary Color <input type="color" id="secondary-color" value="#264653"></label>
+        <label>Logo <input type="file" id="logo-upload" accept="image/*"></label>
+        <div id="branding-preview" class="branding-preview"></div>
+        <button id="save-branding" class="btn">Save Branding</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/app-common.js"></script>
+  <script src="../assets/notes.js"></script>
+</body>
+</html>
